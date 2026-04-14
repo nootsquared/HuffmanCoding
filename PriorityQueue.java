@@ -13,13 +13,13 @@ public class PriorityQueue {
         queue = new ArrayList<>(charFreqs.length); //Q: this good for extra capacity
         for (int i = 0; i < charFreqs.length; i++) {
             if (charFreqs[i] > 0) {
-                insertSorted(new TreeNode(i, charFreqs[i]));
+                insert(new TreeNode(i, charFreqs[i]));
             }
         }
 
     }
     
-    private void insertSorted(TreeNode elm) {
+    public void insert(TreeNode elm) {
         int index = 0;
 
         while (index <= queue.size() - 1 && queue.get(index).getFrequency() <= elm.getFrequency()) {
@@ -37,6 +37,10 @@ public class PriorityQueue {
     // Q: ts inneficient since itll always be n, but is the best way to go about this to reverse the pq?
     public TreeNode poll() {
         return queue.isEmpty() ? null : queue.remove(0);
+    }
+
+    public int size() {
+        return queue.size();
     }
 
     public String debugString() {

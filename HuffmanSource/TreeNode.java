@@ -71,7 +71,6 @@ public class TreeNode implements Comparable<TreeNode> {
      */
 
     public int compareTo(TreeNode rhs) {
-
         return frequency - rhs.frequency;
     }
 

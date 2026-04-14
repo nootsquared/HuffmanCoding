@@ -1,12 +1,20 @@
 public class UnofficialTesting {
     
     public static void main(String[] args) {
-        int[] arr = {1,2 ,3, 4};
-        PriorityQueue pq = new PriorityQueue(arr);
+        PriorityQueue<TreeNode> pq = new PriorityQueue();
 
-        HuffmanCode hc = new HuffmanCode(pq);
+        pq.enqueue(new TreeNode(0,4));
+        pq.enqueue(new TreeNode(1,3));
+        pq.enqueue(new TreeNode(3,2));
+        pq.enqueue(new TreeNode(4,4));
+        System.out.println(pq);
 
-        System.out.println(hc.huffMapString());
+
+        int[] arr = {4, 3, 0, 2, 4};
+        HuffmanCode hc = new HuffmanCode(arr);
+        hc.debugHuff(hc.getRoot(), "");
+
+        //System.out.println(hc);
     }
 
 

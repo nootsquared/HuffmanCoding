@@ -4,25 +4,19 @@
 import java.util.ArrayList;
 
 /* A class that models a fair priority queue */
-public class PriorityQueue {
+public class PriorityQueue<E extends Comparable<E>> {
 
-    ArrayList<TreeNode> queue;
+    ArrayList<E> queue;
 
-    public PriorityQueue(int[] charFreqs) {
-
-        queue = new ArrayList<>(charFreqs.length); //Q: this good for extra capacity
-        for (int i = 0; i < charFreqs.length; i++) {
-            if (charFreqs[i] > 0) {
-                insert(new TreeNode(i, charFreqs[i]));
-            }
-        }
+    public PriorityQueue() {
+        queue = new ArrayList<E>(); // Q: initial capacity?
 
     }
     
-    public void insert(TreeNode elm) {
+    public void enqueue(E elm) {
         int index = 0;
 
-        while (index <= queue.size() - 1 && queue.get(index).getFrequency() <= elm.getFrequency()) {
+        while (index <= queue.size() - 1 && queue.get(index).compareTo(elm) > 0) {
             index++;
         }
 
@@ -30,29 +24,20 @@ public class PriorityQueue {
 
     }
 
-    public TreeNode peek() {
-        return queue.isEmpty() ? null : queue.get(0);
+    public E peek() {
+        return queue.isEmpty() ? null : queue.remove(queue.size() - 1);
     }
 
-    // Q: ts inneficient since itll always be n, but is the best way to go about this to reverse the pq?
-    public TreeNode poll() {
-        return queue.isEmpty() ? null : queue.remove(0);
+    public E dequeue() {
+        return queue.isEmpty() ? null : queue.remove(queue.size() - 1);
+    }
+
+    public boolean isEmpty() {
+        return queue.isEmpty();
     }
 
     public int size() {
         return queue.size();
-    }
-
-    public String debugString() {
-        StringBuilder s = new StringBuilder("[");
-
-        if (!queue.isEmpty()) {
-            for (TreeNode node : queue) {
-                s.append("" + node.getFrequency() + ", ");
-            }
-            s.delete(s.length() - 2, s.length());
-        }
-        return s + "]";
     }
 
     public String toString() {

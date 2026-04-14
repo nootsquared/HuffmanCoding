@@ -1,14 +1,14 @@
 /*  Student information for assignment:
  *
- *  On <MY|OUR> honor, <NAME1> (and <NAME2),
- *  this programming assignment is <MY|OUR> own work
- *  and <I|WE> have not provided this code to any other student.
+ *  On our honor, Anishka and Pranav,
+ *  this programming assignment is our own work
+ *  and we have not provided this code to any other student.
  *
  *  Number of slip days used:
  *
- *  Student 1:
- *  UTEID:
- *  email address:
+ *  Student 1: Anishka Chokshi
+ *  UTEID: arc6369
+ *  email address: arc6369@my.utexas.edu
  *
  *  Student 2:
  *  UTEID:

@@ -1,6 +1,9 @@
-// TODO: add header
+// TODO: add header + comments
 
 import java.util.TreeSet;
+
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -20,7 +23,7 @@ public class HuffmanCode {
             }
         }
         root = generateHuffMap(pq);
-        // huffCode = generateHuffCode();
+        huffCode = generateHuffCode();
     }
 
     private TreeNode generateHuffMap(PriorityQueue<TreeNode> pq) {
@@ -44,30 +47,36 @@ public class HuffmanCode {
         HashMap<Integer, String> codes = new HashMap<Integer, String>();
 
         huffCodeHelper(codes, root, "");
-        
         return codes;
     }
 
     private void huffCodeHelper(HashMap<Integer, String> codes, TreeNode node, String path) {
         if (node.isLeaf()) {
             codes.put(node.getValue(), path);
-        }  
-
-        huffCodeHelper(codes, node.getLeft(), path + "0");
-        huffCodeHelper(codes, node.getLeft(), path + "1");
+        }  else {
+            huffCodeHelper(codes, node.getLeft(), path + "0");
+            huffCodeHelper(codes, node.getRight(), path + "1");
+        }
+        
     }
 
     public void debugHuff(TreeNode node, String path) {
         if (node.isLeaf()) {
-            System.out.println(node.getValue() + " : " + path);
-        }  
+            System.out.println(node + " : " + path);
+        } else {
+            debugHuff(node.getLeft(), path + "0");
+            debugHuff(node.getRight(), path + "1");
+        }
+    }
 
-        debugHuff(node.getLeft(), path + "0");
-        debugHuff(node.getRight(), path + "1");
+    public void printCodes() {
+        for (Integer val : huffCode.keySet()) {
+            System.out.println(val + " : " + huffCode.get(val));
+        }
     }
 
     public String toString() {
-        return huffCode.toString();
+        return "" + huffCode;
     }
 
 }

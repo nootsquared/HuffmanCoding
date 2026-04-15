@@ -47,7 +47,7 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         showString("Not working yet");
         myViewer.update("Still not working");
         throw new IOException("preprocess not implemented");
-        //return 0;
+        //return 0; 
     }
 
     /**

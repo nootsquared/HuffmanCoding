@@ -26,6 +26,7 @@ public class SimpleHuffProcessor implements IHuffProcessor {
 
     private IHuffViewer myViewer;
     private HuffmanCode huffCode;
+    private int headerFormat;
 
     /**
      * Preprocess data so that compression is possible ---
@@ -50,9 +51,12 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         //throw new IOException("preprocess not implemented");
 
         BitInputStream bitInputStream = new BitInputStream(in);
-        int[] charFreqs = new int[ALPH_SIZE];
-        int inbits = 0;
         int initialBits = 0;
+        int finalBits = MAGIC_NUMBER + BITS_PER_INT;
+        
+        int[] charFreqs = new int[ALPH_SIZE];
+
+        int inbits = 0;
 
         while (inbits != -1) {
             inbits = bitInputStream.readBits(IHuffConstants.BITS_PER_WORD);
@@ -61,12 +65,18 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             initialBits += IHuffConstants.BITS_PER_WORD;
         }
 
-        bitInputStream.close();
-
         huffCode = new HuffmanCode(charFreqs);
 
-        int finalBits = MAGIC_NUMBER + BITS_PER_INT + huffCode.countBits(charFreqs);
+        if (headerFormat == IHuffConstants.STORE_COUNTS) {
+            finalBits = (BITS_PER_INT * ALPH_SIZE)
+        } else if (headerFormat == IHuffConstants.STORE_TREE) {
+            finalBits += BITS_PER_INT;
+            finalBits += (huffCode.getNumLeafNodes() * 9) + huffCode.treeSize();
+        }
 
+        finalBits += huffCode.countBits(charFreqs);
+        bitInputStream.close();
+        
         return initialBits - finalBits; 
     }
 

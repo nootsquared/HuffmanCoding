@@ -11,15 +11,20 @@ import java.util.HashMap;
 public class HuffmanCode {
 
     private TreeNode root;
+    private int huffTreeSize;
+    private int numLeaves;
     private HashMap<Integer, String> huffCode;
 
     public HuffmanCode(int[] charFreqs) {
         
         PriorityQueue<TreeNode> pq = new PriorityQueue<>();
+        huffTreeSize = 0;
+        numLeaves = 0;
 
         for (int i = 0; i < charFreqs.length; i++) {
             if (charFreqs[i] > 0) {
                 pq.enqueue(new TreeNode(i, charFreqs[i]));
+                numLeaves++;
             }
         }
         pq.enqueue(new TreeNode(IHuffConstants.PSEUDO_EOF, 1));
@@ -35,10 +40,20 @@ public class HuffmanCode {
 
             TreeNode result = new TreeNode(left, left.getFrequency() + right.getFrequency(),right);
             pq.enqueue(result);
+            huffTreeSize++;
         }
 
         return pq.dequeue();
     }
+
+    public int getNumLeafNodes() {
+        return numLeaves;
+    }
+
+    public int treeSize() {
+        return huffTreeSize;
+    }
+
 
     public TreeNode getRoot() {
         return root;

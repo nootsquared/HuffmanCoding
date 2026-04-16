@@ -45,9 +45,9 @@ public class PriorityQueue<E extends Comparable<E>> {
 
         if (!queue.isEmpty()) {
             for (int i = queue.size() - 1; i >= 0; i--) {
-                q.append(queue.get(i));
+                q.append(queue.get(i) + ", ");
             }
-            q.delete(queue.size() - 2, queue.size())
+            q.delete(q.length() - 2, q.length());
         }
         return q.toString() + "]";
 

@@ -3,15 +3,12 @@ public class UnofficialTesting {
     public static void main(String[] args) {
         
 
-        int[] arr = {4, 3, 0, 2, 4};
+        int[] arr = {0, 1, 2, 3, 4, 5, 6};
         
         HuffmanCode hc = new HuffmanCode(arr);
 
-        BitInputStream bitInputStream = new BitInputStream("test.txt");
+        System.out.println(hc);
 
-        int inbits = bitInputStream.readBits(8);
-
-        bitInputStream.close();
     }
 
 

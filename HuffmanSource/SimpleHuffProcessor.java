@@ -50,23 +50,29 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         //myViewer.update("Still not working");
         //throw new IOException("preprocess not implemented");
 
+        // make new bitInputStream and initialize initial/final bits
         BitInputStream bitInputStream = new BitInputStream(in);
         int initialBits = 0;
         int finalBits = MAGIC_NUMBER + BITS_PER_INT;
         
+        // initialize charFreqs array
         int[] charFreqs = new int[ALPH_SIZE];
 
         int inbits = 0;
 
+        // parse through each byte in the file and increment the letter in the charFreqs array
         while (inbits != -1) {
             inbits = bitInputStream.readBits(IHuffConstants.BITS_PER_WORD);
             int letter = Integer.parseInt("" + inbits, 2);
             charFreqs[letter]++;
+            // add 8 bits to initial bits counter
             initialBits += IHuffConstants.BITS_PER_WORD;
         }
 
+        // get huffman code object using charFreqs
         huffCode = new HuffmanCode(charFreqs);
 
+        // if headerFormat is store counts, add approopriate header size to final bits
         if (headerFormat == IHuffConstants.STORE_COUNTS) {
             finalBits = (BITS_PER_INT * ALPH_SIZE)
         } else if (headerFormat == IHuffConstants.STORE_TREE) {
@@ -74,6 +80,7 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             finalBits += (huffCode.getNumLeafNodes() * 9) + huffCode.treeSize();
         }
 
+        // count total number of bits from the compressed version of the file
         finalBits += huffCode.countBits(charFreqs);
         bitInputStream.close();
         

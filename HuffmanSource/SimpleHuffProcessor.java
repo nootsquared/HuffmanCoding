@@ -25,6 +25,7 @@ import java.io.OutputStream;
 public class SimpleHuffProcessor implements IHuffProcessor {
 
     private IHuffViewer myViewer;
+    private HuffmanCode huffCode;
 
     /**
      * Preprocess data so that compression is possible ---
@@ -50,19 +51,23 @@ public class SimpleHuffProcessor implements IHuffProcessor {
 
         BitInputStream bitInputStream = new BitInputStream(in);
         int[] charFreqs = new int[ALPH_SIZE];
+        int inbits = 0;
+        int initialBits = 0;
 
-        do {
-            int inbits = bitInputStream.readBits(IHuffConstants.BITS_PER_WORD);
-            char letter = (char) Integer.parseInt("" + inbits, 2);
+        while (inbits != -1) {
+            inbits = bitInputStream.readBits(IHuffConstants.BITS_PER_WORD);
+            int letter = Integer.parseInt("" + inbits, 2);
             charFreqs[letter]++;
-        } while (inbits != -1);
-
-        HuffmanCode huff = new HuffmanCode(charFreqs);
+            initialBits += IHuffConstants.BITS_PER_WORD;
+        }
 
         bitInputStream.close();
 
+        huffCode = new HuffmanCode(charFreqs);
 
-        return 0; 
+        int finalBits = MAGIC_NUMBER + BITS_PER_INT + huffCode.countBits(charFreqs);
+
+        return initialBits - finalBits; 
     }
 
     /**
@@ -80,8 +85,21 @@ public class SimpleHuffProcessor implements IHuffProcessor {
      * writing to the output file.
      */
     public int compress(InputStream in, OutputStream out, boolean force) throws IOException {
-        throw new IOException("compress is not implemented");
-        //return 0;
+        //throw new IOException("compress is not implemented");
+
+        BitInputStream bis = new BitInputStream(in);
+        // making my input stream
+        // write out header info
+        // read the input stream, for char output coded version
+        // at the end, manually add pseudo eof
+        
+        
+        if (force) {
+            
+            return 1;
+        }
+
+        return 0;
     }
 
     /**

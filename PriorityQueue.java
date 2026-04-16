@@ -1,22 +1,23 @@
 
 // TODO: copy header + add comments
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 /* A class that models a fair priority queue */
 public class PriorityQueue<E extends Comparable<E>> {
 
-    ArrayList<E> queue;
+    LinkedList<E> queue;
 
     public PriorityQueue() {
-        queue = new ArrayList<E>(); // Q: initial capacity?
+        queue = new LinkedList<>();
 
     }
     
     public void enqueue(E elm) {
         int index = 0;
 
-        while (index <= queue.size() - 1 && queue.get(index).compareTo(elm) > 0) {
+        
+        while (index < queue.size() && queue.get(index).compareTo(elm) < 0) {
             index++;
         }
 
@@ -25,11 +26,11 @@ public class PriorityQueue<E extends Comparable<E>> {
     }
 
     public E peek() {
-        return queue.isEmpty() ? null : queue.remove(queue.size() - 1);
+        return queue.peekFirst();
     }
 
     public E dequeue() {
-        return queue.isEmpty() ? null : queue.remove(queue.size() - 1);
+        return queue.removeFirst();
     }
 
     public boolean isEmpty() {
@@ -40,16 +41,9 @@ public class PriorityQueue<E extends Comparable<E>> {
         return queue.size();
     }
 
+    // Q: design of pq and if its ok
     public String toString() {
-        StringBuilder q = new StringBuilder("[");
-
-        if (!queue.isEmpty()) {
-            for (int i = queue.size() - 1; i >= 0; i--) {
-                q.append(queue.get(i) + ", ");
-            }
-            q.delete(q.length() - 2, q.length());
-        }
-        return q.toString() + "]";
+        return queue.toString();
 
     }
 }

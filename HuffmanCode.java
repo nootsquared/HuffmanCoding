@@ -22,6 +22,7 @@ public class HuffmanCode {
                 pq.enqueue(new TreeNode(i, charFreqs[i]));
             }
         }
+        pq.enqueue(new TreeNode(IHuffConstants.PSEUDO_EOF, 1));
         root = generateHuffMap(pq);
         huffCode = generateHuffCode();
     }
@@ -58,6 +59,14 @@ public class HuffmanCode {
             huffCodeHelper(codes, node.getRight(), path + "1");
         }
         
+    }
+
+    public int countBits(int[] charFreqs) {
+        int numBits = 0;
+        for (int i = 0; i < charFreqs.length; i++) {
+            numBits += i * charFreqs[i];
+        }
+        return numBits;
     }
 
     public void debugHuff(TreeNode node, String path) {

@@ -44,10 +44,25 @@ public class SimpleHuffProcessor implements IHuffProcessor {
      * @throws IOException if an error occurs while reading from the input file.
      */
     public int preprocessCompress(InputStream in, int headerFormat) throws IOException {
-        showString("Not working yet");
-        myViewer.update("Still not working");
-        throw new IOException("preprocess not implemented");
-        //return 0; 
+        //showString("Not working yet");
+        //myViewer.update("Still not working");
+        //throw new IOException("preprocess not implemented");
+
+        BitInputStream bitInputStream = new BitInputStream(in);
+        int[] charFreqs = new int[ALPH_SIZE];
+
+        do {
+            int inbits = bitInputStream.readBits(IHuffConstants.BITS_PER_WORD);
+            char letter = (char) Integer.parseInt("" + inbits, 2);
+            charFreqs[letter]++;
+        } while (inbits != -1);
+
+        HuffmanCode huff = new HuffmanCode(charFreqs);
+
+        bitInputStream.close();
+
+
+        return 0; 
     }
 
     /**

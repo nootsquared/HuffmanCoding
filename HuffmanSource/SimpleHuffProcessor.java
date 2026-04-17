@@ -129,8 +129,96 @@ public class SimpleHuffProcessor implements IHuffProcessor {
      * writing to the output file.
      */
     public int uncompress(InputStream in, OutputStream out) throws IOException {
-	        throw new IOException("uncompress not implemented");
-	        //return 0;
+            BitInputStream bis = new BitInputStream(in);
+            BitOutputStream bos = new BitOutputStream(out);
+            int[] freq;
+            TreeNode root;
+            if (bis.readBits(BITS_PER_INT) != MAGIC_NUMBER){
+                throw new IOException("Not a valid Huffman file (missing the huffman magic number");
+            }
+            int headerType = bis.readBits(BITS_PER_INT);
+            if (headerType == STORE_COUNTS){
+                freq = new int[ALPH_SIZE];
+                for (int k = 0; k < ALPH_SIZE; k++){
+                    int freqInOriginalFile = bis.readBits(BITS_PER_INT);
+                    freq[k] = freqInOriginalFile;
+                }
+                HuffmanCode rebuiltCode = new HuffmanCode(freq);
+                root = rebuiltCode.getRoot();
+            }
+            else if (headerType == STORE_TREE) {
+                int treeBitCount = bis.readBits(BITS_PER_INT);
+                root = new TreeNode(0, 0);
+                root = readTree(bis);
+            }
+            else{
+                throw new IOException("Invalid header type");
+            }
+            return decode(bis, bos, root);
+    }
+
+    /**
+     * Decodes the compressed bits using the huffman tree and writes origional bytes
+     * 
+     * pre: bis != null, bos != null, root != null
+     * post: decoded bytes are written to bos until PSEUDO_EOF
+     * @param bis input stream of compressed bits
+     * @param bos output stream of decoded bits
+     * @param root root of the Huffman tree used for decoding
+     * @return number of bits written to the output
+     * @throws IOException if input ends before PSEUDO_EOF
+     */
+    private int decode(BitInputStream bis, BitOutputStream bos, TreeNode root) throws IOException{
+       boolean eof = false;
+       int bitsWritten = 0;
+       TreeNode tempNode = root;
+       while (!eof) {
+        int bitInput = bis.readBits(1);
+        if (bitInput == -1){
+            throw new IOException("ended input before the PSEUDO_EOF");
+        }
+        if (bitInput == 0){
+            tempNode = tempNode.getLeft();
+
+        }
+        else if (bitInput == 1) {
+            tempNode = tempNode.getRight();
+        }
+        if (tempNode.isLeaf()) {
+            if (tempNode.getValue() == PSEUDO_EOF){
+                eof = true;
+            }
+            else{
+                // QUESTION: do I use writeBITS and use bits per word or just write?
+                bos.writeBits(BITS_PER_WORD, tempNode.getValue());
+                tempNode = root;
+                bitsWritten += BITS_PER_WORD;
+            }
+        }
+       }
+       return bitsWritten;
+    }
+
+    /**
+     * Rebuilds a Huffman tree from STF bits using a preorder traversal
+     * 
+     * pre: bis != null
+     * post: returns the root of the rebuild subtree/tree
+     * @param bis bit input stream to read the bits from
+     * @return root node of the rebuilt tree/subtree
+     * @throws IOException if the steam ends early or the tree data is not valid
+     */
+    private TreeNode readTree(BitInputStream bis) throws IOException{
+        boolean isLeaf = bis.readBits(1) == 1;
+        if (isLeaf){
+            int value = bis.readBits(BITS_PER_WORD + 1);
+            return new TreeNode(value, 0);
+        }
+        else {
+            TreeNode leftNode = readTree(bis);
+            TreeNode rightNode = readTree(bis);
+            return new TreeNode(leftNode, 0, rightNode);
+        }
     }
 
     public void setViewer(IHuffViewer viewer) {

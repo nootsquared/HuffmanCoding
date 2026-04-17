@@ -10,9 +10,9 @@
  *  UTEID: arc6369
  *  email address: arc6369@my.utexas.edu
  *
- *  Student 2:
- *  UTEID:
- *  email address:
+ *  Student 2: Pranav Maringanti
+ *  UTEID: prm2384
+ *  email address: prm2384@eid.utexas.edu
  *
  *  Grader name:
  *  Section number:
@@ -26,7 +26,6 @@ public class SimpleHuffProcessor implements IHuffProcessor {
 
     private IHuffViewer myViewer;
     private HuffmanCode huffCode;
-    private int headerFormat;
 
     /**
      * Preprocess data so that compression is possible ---
@@ -46,44 +45,29 @@ public class SimpleHuffProcessor implements IHuffProcessor {
      * @throws IOException if an error occurs while reading from the input file.
      */
     public int preprocessCompress(InputStream in, int headerFormat) throws IOException {
-        //showString("Not working yet");
-        //myViewer.update("Still not working");
-        //throw new IOException("preprocess not implemented");
-
-        // make new bitInputStream and initialize initial/final bits
         BitInputStream bitInputStream = new BitInputStream(in);
         int initialBits = 0;
-        int finalBits = MAGIC_NUMBER + BITS_PER_INT;
-        
-        // initialize charFreqs array
+        int finalBits = BITS_PER_INT + BITS_PER_INT;
         int[] charFreqs = new int[ALPH_SIZE];
-
         int inbits = 0;
-
         // parse through each byte in the file and increment the letter in the charFreqs array
+        inbits = bitInputStream.readBits(BITS_PER_WORD);
         while (inbits != -1) {
-            inbits = bitInputStream.readBits(IHuffConstants.BITS_PER_WORD);
-            int letter = Integer.parseInt("" + inbits, 2);
-            charFreqs[letter]++;
-            // add 8 bits to initial bits counter
-            initialBits += IHuffConstants.BITS_PER_WORD;
+            charFreqs[inbits]++;
+            initialBits += BITS_PER_WORD;
+            inbits = bitInputStream.readBits(BITS_PER_WORD);
         }
-
-        // get huffman code object using charFreqs
         huffCode = new HuffmanCode(charFreqs);
-
-        // if headerFormat is store counts, add approopriate header size to final bits
+        // if headerFormat is store counts, add appropriate header size to final bits
         if (headerFormat == IHuffConstants.STORE_COUNTS) {
-            finalBits = (BITS_PER_INT * ALPH_SIZE)
+            finalBits += (BITS_PER_INT * ALPH_SIZE);
         } else if (headerFormat == IHuffConstants.STORE_TREE) {
             finalBits += BITS_PER_INT;
             finalBits += (huffCode.getNumLeafNodes() * 9) + huffCode.treeSize();
         }
-
         // count total number of bits from the compressed version of the file
         finalBits += huffCode.countBits(charFreqs);
         bitInputStream.close();
-        
         return initialBits - finalBits; 
     }
 

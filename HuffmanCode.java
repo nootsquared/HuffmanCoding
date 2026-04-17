@@ -10,9 +10,9 @@
  *  UTEID: arc6369
  *  email address: arc6369@my.utexas.edu
  *
- *  Student 2:
- *  UTEID:
- *  email address:
+ *  Student 2: Pranav Maringanti
+ *  UTEID: prm2384
+ *  email address: prm2384@eid.utexas.edu
  *
  *  Grader name: Issac
  *  Section number: 52970
@@ -134,8 +134,11 @@ public class HuffmanCode {
     public int countBits(int[] charFreqs) {
         int numBits = 0;
         for (int i = 0; i < charFreqs.length; i++) {
-            numBits += i * charFreqs[i];
+            if (charFreqs[i] > 0){
+                numBits += huffCode.get(i).length() * charFreqs[i];
+            }
         }
+        numBits += huffCode.get(IHuffConstants.PSEUDO_EOF).length();
         return numBits;
     }
 

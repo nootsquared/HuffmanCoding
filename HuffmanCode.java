@@ -51,6 +51,7 @@ public class HuffmanCode {
 
         // enqueue the PEOF character manually
         pq.enqueue(new TreeNode(IHuffConstants.PSEUDO_EOF, 1));
+        numLeaves++;
 
         // generate huff map and code
         root = generateHuffMap(pq);

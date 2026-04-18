@@ -58,16 +58,14 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             inbits = bitInputStream.readBits(BITS_PER_WORD);
         }
         huffCode = new HuffmanCode(charFreqs);
-        // if headerFormat is store counts, add appropriate header size to final bits
         if (headerFormat == IHuffConstants.STORE_COUNTS) {
             finalBits += (BITS_PER_INT * ALPH_SIZE);
         } else if (headerFormat == IHuffConstants.STORE_TREE) {
             finalBits += BITS_PER_INT;
-            finalBits += (huffCode.getNumLeafNodes() * 9) + huffCode.treeSize();
+            // 1 bit (1) + 9 bits following
+            finalBits += (huffCode.treeSize()) + (huffCode.getNumLeafNodes() * (1 + (BITS_PER_WORD + 1)));
         }
-        // count total number of bits from the compressed version of the file
         finalBits += huffCode.countBits(charFreqs);
-        bitInputStream.close();
         return initialBits - finalBits; 
     }
 
@@ -86,20 +84,15 @@ public class SimpleHuffProcessor implements IHuffProcessor {
      * writing to the output file.
      */
     public int compress(InputStream in, OutputStream out, boolean force) throws IOException {
-        //throw new IOException("compress is not implemented");
-
         BitInputStream bis = new BitInputStream(in);
         // making my input stream
         // write out header info
         // read the input stream, for char output coded version
         // at the end, manually add pseudo eof
-        
-        
         if (force) {
             
             return 1;
         }
-
         return 0;
     }
 
@@ -117,14 +110,24 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             BitOutputStream bos = new BitOutputStream(out);
             int[] freq;
             TreeNode root;
-            if (bis.readBits(BITS_PER_INT) != MAGIC_NUMBER){
-                throw new IOException("Not a valid Huffman file (missing the huffman magic number");
+            int magicNumber = bis.readBits(BITS_PER_INT);
+            if (magicNumber == -1){
+                throw new IOException("ended input before the PSEUDO_EOF");
+            }
+            else if (magicNumber != MAGIC_NUMBER){
+                throw new IOException("Not a valid Huffman file (missing the huffman magic number)");
             }
             int headerType = bis.readBits(BITS_PER_INT);
+            if (headerType == -1){
+                throw new IOException("ended input before the PSEUDO_EOF");
+            }
             if (headerType == STORE_COUNTS){
                 freq = new int[ALPH_SIZE];
                 for (int k = 0; k < ALPH_SIZE; k++){
                     int freqInOriginalFile = bis.readBits(BITS_PER_INT);
+                    if (freqInOriginalFile == -1){
+                        throw new IOException("ended input before the PSEUDO_EOF");
+                    }
                     freq[k] = freqInOriginalFile;
                 }
                 HuffmanCode rebuiltCode = new HuffmanCode(freq);
@@ -132,7 +135,9 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             }
             else if (headerType == STORE_TREE) {
                 int treeBitCount = bis.readBits(BITS_PER_INT);
-                root = new TreeNode(0, 0);
+                if (treeBitCount == -1){
+                    throw new IOException("ended input before the PSEUDO_EOF");
+                }
                 root = readTree(bis);
             }
             else{
@@ -168,18 +173,22 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         else if (bitInput == 1) {
             tempNode = tempNode.getRight();
         }
+        // do I need to check for null here
+        if (tempNode == null){
+            throw new IOException("Invalid tree structure, reached a null node");
+        }
         if (tempNode.isLeaf()) {
             if (tempNode.getValue() == PSEUDO_EOF){
                 eof = true;
             }
             else{
-                // QUESTION: do I use writeBITS and use bits per word or just write?
                 bos.writeBits(BITS_PER_WORD, tempNode.getValue());
                 tempNode = root;
                 bitsWritten += BITS_PER_WORD;
             }
         }
        }
+       bos.flush();
        return bitsWritten;
     }
 
@@ -193,9 +202,15 @@ public class SimpleHuffProcessor implements IHuffProcessor {
      * @throws IOException if the steam ends early or the tree data is not valid
      */
     private TreeNode readTree(BitInputStream bis) throws IOException{
-        boolean isLeaf = bis.readBits(1) == 1;
-        if (isLeaf){
+        int bit = bis.readBits(1);
+        if (bit == -1){
+            throw new IOException("ended early while reading the tree");
+        }
+        if (bit == 1){
             int value = bis.readBits(BITS_PER_WORD + 1);
+            if (value == -1){
+                throw new IOException("ended early while reading the tree");
+            }
             return new TreeNode(value, 0);
         }
         else {

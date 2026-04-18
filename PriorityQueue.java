@@ -11,9 +11,9 @@
  *  UTEID: arc6369
  *  email address: arc6369@my.utexas.edu
  *
- *  Student 2:
- *  UTEID:
- *  email address:
+ *  Student 2: Pranav Maringanti
+ *  UTEID: prm2384
+ *  email address: prm2384@eid.utexas.edu
  *
  *  Grader name: Issac
  *  Section number: 52970
@@ -48,7 +48,7 @@ public class PriorityQueue<E extends Comparable<E>> {
         }
 
         int index = 0;
-        while (index < queue.size() && queue.get(index).compareTo(elm) < 0) {
+        while (index < queue.size() && queue.get(index).compareTo(elm) <= 0) {
             index++;
         }
         queue.add(index, elm);

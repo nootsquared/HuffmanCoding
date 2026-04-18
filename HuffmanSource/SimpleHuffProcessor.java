@@ -21,11 +21,16 @@
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 
 public class SimpleHuffProcessor implements IHuffProcessor {
 
     private IHuffViewer myViewer;
     private HuffmanCode huffCode;
+    private int compressHeaderFormat;
+    private int[] compressCharFreqs;
+    private int compressSavedBits;
+    private int compressFinalBits;
 
     /**
      * Preprocess data so that compression is possible ---
@@ -49,6 +54,10 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         int initialBits = 0;
         int finalBits = BITS_PER_INT + BITS_PER_INT;
         int[] charFreqs = new int[ALPH_SIZE];
+        compressCharFreqs = new int[ALPH_SIZE];
+        for (int i = 0; i < ALPH_SIZE; i++){
+            compressCharFreqs[i] = charFreqs[i];
+        }
         int inbits = 0;
         // parse through each byte in the file and increment the letter in the charFreqs array
         inbits = bitInputStream.readBits(BITS_PER_WORD);
@@ -58,6 +67,7 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             inbits = bitInputStream.readBits(BITS_PER_WORD);
         }
         huffCode = new HuffmanCode(charFreqs);
+        compressHeaderFormat = headerFormat;
         if (headerFormat == IHuffConstants.STORE_COUNTS) {
             finalBits += (BITS_PER_INT * ALPH_SIZE);
         } else if (headerFormat == IHuffConstants.STORE_TREE) {
@@ -66,7 +76,9 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             finalBits += (huffCode.treeSize()) + (huffCode.getNumLeafNodes() * (1 + (BITS_PER_WORD + 1)));
         }
         finalBits += huffCode.countBits(charFreqs);
-        return initialBits - finalBits; 
+        compressFinalBits = finalBits;
+        compressSavedBits = initialBits - finalBits; 
+        return compressSavedBits;
     }
 
     /**
@@ -85,15 +97,84 @@ public class SimpleHuffProcessor implements IHuffProcessor {
      */
     public int compress(InputStream in, OutputStream out, boolean force) throws IOException {
         BitInputStream bis = new BitInputStream(in);
-        // making my input stream
-        // write out header info
-        // read the input stream, for char output coded version
-        // at the end, manually add pseudo eof
-        if (force) {
-            
-            return 1;
+        BitOutputStream bos = new BitOutputStream(out);
+        TreeNode root;
+        HashMap<Integer, String> huffMap = huffCode.generateHuffCode(); 
+        if (!force && compressSavedBits < 0) {
+            return 0;
         }
-        return 0;
+        bos.writeBits(BITS_PER_INT, MAGIC_NUMBER);
+        bos.writeBits(BITS_PER_INT, compressHeaderFormat);
+        if (compressHeaderFormat == STORE_COUNTS){
+            for (int frequency : compressCharFreqs){
+                bos.writeBits(BITS_PER_INT, frequency);
+            }
+        }
+        if (compressHeaderFormat == STORE_TREE){
+            root = huffCode.getRoot();
+            int treeBitSize = (huffCode.treeSize()) + (huffCode.getNumLeafNodes() * (1 + (BITS_PER_WORD + 1)));
+            bos.writeBits(BITS_PER_INT, treeBitSize);
+            writeStoreTree(bos, root);
+        }
+        boolean compressedData = true;
+        while (compressedData) {
+            compressedData = writeCompressedData(bis, bos, huffMap);
+        }
+        String psuedoEofCode = huffMap.get(PSEUDO_EOF);
+        for (int i = 0; i < psuedoEofCode.length(); i++){
+            bos.writeBits(1, Integer.parseInt(psuedoEofCode.charAt(i) + ""));
+        }
+        bos.flush();
+        return compressFinalBits;
+    }
+
+    /**
+     * Reads the next byte from input and writes its corresponding Huffman encoding to the output
+     * 
+     * pre: bis != null, bos != null, huffMap != null
+     * post: encoded bits are written to bos (nothing if loop is over)
+     * @param bis input stream to write the encoded bits to
+     * @param bos output stream to write the encoded bits to
+     * @param huffMap map of byte values to their Huffman encodings
+     * @return true if a byte was encoded and false if no more input left
+     * @throws IOException if reading or writing fails
+     */
+    private boolean writeCompressedData(BitInputStream bis ,BitOutputStream bos, HashMap<Integer, String> huffMap) throws IOException{
+        int nextItem = bis.readBits(BITS_PER_WORD);
+        if (nextItem == -1){
+            return false;
+        }
+        else{
+            String encodedItemString = huffMap.get(nextItem);
+            for (int i = 0; i < encodedItemString.length(); i++){
+                bos.writeBits(1, Integer.parseInt(encodedItemString.charAt(i) + ""));
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Writes the Huffman tree in STF preorder traversal with 0 for internal nodes and 
+     * 1 + 9bit value for the leaves
+     * 
+     * pre: bos != null
+     * post: subtree from node written to bos in STF format
+     * @param bos output stream to write the tree bits to
+     * @param node current node in the traversal
+     * @throws IOException if writing fails
+     */
+    private void writeStoreTree(BitOutputStream bos, TreeNode node) throws IOException{
+        if (node != null){
+            if (node.isLeaf()){
+                bos.writeBits(1, 1);
+                bos.writeBits(BITS_PER_WORD + 1, node.getValue());
+            }
+            else{
+                bos.writeBits(1, 0);
+                writeStoreTree(bos, node.getLeft());
+                writeStoreTree(bos, node.getRight());
+            }
+        }
     }
 
     /**
@@ -112,21 +193,21 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             TreeNode root;
             int magicNumber = bis.readBits(BITS_PER_INT);
             if (magicNumber == -1){
-                throw new IOException("ended input before the PSEUDO_EOF");
+                throw new IOException("File ended before we could read the magic number");
             }
             else if (magicNumber != MAGIC_NUMBER){
-                throw new IOException("Not a valid Huffman file (missing the huffman magic number)");
+                throw new IOException("Not a valid Huffman file (missing the magic number)");
             }
             int headerType = bis.readBits(BITS_PER_INT);
             if (headerType == -1){
-                throw new IOException("ended input before the PSEUDO_EOF");
+                throw new IOException("File ended before we could read the header type");
             }
             if (headerType == STORE_COUNTS){
                 freq = new int[ALPH_SIZE];
                 for (int k = 0; k < ALPH_SIZE; k++){
                     int freqInOriginalFile = bis.readBits(BITS_PER_INT);
                     if (freqInOriginalFile == -1){
-                        throw new IOException("ended input before the PSEUDO_EOF");
+                        throw new IOException("File ended while reading the frequency counts");
                     }
                     freq[k] = freqInOriginalFile;
                 }
@@ -136,7 +217,7 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             else if (headerType == STORE_TREE) {
                 int treeBitCount = bis.readBits(BITS_PER_INT);
                 if (treeBitCount == -1){
-                    throw new IOException("ended input before the PSEUDO_EOF");
+                    throw new IOException("File ended before we could read the tree size");
                 }
                 root = readTree(bis);
             }

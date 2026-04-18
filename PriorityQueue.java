@@ -32,12 +32,15 @@ public class PriorityQueue<E extends Comparable<E>> {
     public PriorityQueue() {
         queue = new LinkedList<>();
     }
-    
+
     /**
-     * Adds an element to the priority queue in ascending order. If two elements have the same priority, 
-     * tiebreaker is used
-     * @param elm is the element to be enqueued
-     * @throws IllegalArgumentException if elm is null
+     * Adds an element to the priority queue in ascending order. If two elements have the same
+     * priority, tiebreaker is used
+     *
+     * @param elm
+     *         is the element to be enqueued
+     * @throws IllegalArgumentException
+     *         if elm is null
      */
     public void enqueue(E elm) {
         if (elm == null) {
@@ -54,6 +57,7 @@ public class PriorityQueue<E extends Comparable<E>> {
 
     /**
      * Returns the first elm of the queue (without removing it)
+     *
      * @return the first elm of the queue
      */
     public E peek() {
@@ -62,6 +66,7 @@ public class PriorityQueue<E extends Comparable<E>> {
 
     /**
      * Removes and returns the first elm of the queue
+     *
      * @return the elm that was removed
      */
     public E dequeue() {
@@ -70,6 +75,7 @@ public class PriorityQueue<E extends Comparable<E>> {
 
     /**
      * Returns if the queue is empty
+     *
      * @return true if queue is empty, false if otherwise
      */
     public boolean isEmpty() {
@@ -78,6 +84,7 @@ public class PriorityQueue<E extends Comparable<E>> {
 
     /**
      * Returns the size of the queue
+     *
      * @return integer queue size
      */
     public int size() {
@@ -86,6 +93,7 @@ public class PriorityQueue<E extends Comparable<E>> {
 
     /**
      * Returns String representation of the queue
+     *
      * @return linked list class String representation of queue
      */
     public String toString() {

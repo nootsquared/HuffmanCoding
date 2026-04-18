@@ -54,10 +54,6 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         int initialBits = 0;
         int finalBits = BITS_PER_INT + BITS_PER_INT;
         int[] charFreqs = new int[ALPH_SIZE];
-        compressCharFreqs = new int[ALPH_SIZE];
-        for (int i = 0; i < ALPH_SIZE; i++){
-            compressCharFreqs[i] = charFreqs[i];
-        }
         int inbits = 0;
         // parse through each byte in the file and increment the letter in the charFreqs array
         inbits = bitInputStream.readBits(BITS_PER_WORD);
@@ -65,6 +61,10 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             charFreqs[inbits]++;
             initialBits += BITS_PER_WORD;
             inbits = bitInputStream.readBits(BITS_PER_WORD);
+        }
+        compressCharFreqs = new int[ALPH_SIZE];
+        for (int i = 0; i < ALPH_SIZE; i++){
+            compressCharFreqs[i] = charFreqs[i];
         }
         huffCode = new HuffmanCode(charFreqs);
         compressHeaderFormat = headerFormat;
@@ -101,6 +101,7 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         TreeNode root;
         HashMap<Integer, String> huffMap = huffCode.generateHuffCode(); 
         if (!force && compressSavedBits < 0) {
+            myViewer.showError("Compressed file is larger than the og file, activate force to compress anyways");
             return 0;
         }
         bos.writeBits(BITS_PER_INT, MAGIC_NUMBER);
@@ -133,7 +134,7 @@ public class SimpleHuffProcessor implements IHuffProcessor {
      * 
      * pre: bis != null, bos != null, huffMap != null
      * post: encoded bits are written to bos (nothing if loop is over)
-     * @param bis input stream to write the encoded bits to
+     * @param bis input stream to read the encoded bits to
      * @param bos output stream to write the encoded bits to
      * @param huffMap map of byte values to their Huffman encodings
      * @return true if a byte was encoded and false if no more input left

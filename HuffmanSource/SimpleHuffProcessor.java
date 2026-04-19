@@ -150,7 +150,8 @@ public class SimpleHuffProcessor implements IHuffProcessor {
     /**
      * Reads the next byte from input and writes its corresponding Huffman encoding to the output
      *
-     * pre: bis != null, bos != null, huffMap != null post: encoded bits are written to bos (nothing
+     * pre: bis != null, bos != null, huffMap != null 
+     * post: encoded bits are written to bos (nothing
      * if loop is over)
      *
      * @param bis
@@ -182,7 +183,8 @@ public class SimpleHuffProcessor implements IHuffProcessor {
      * Writes the Huffman tree in STF preorder traversal with 0 for internal nodes and 1 + 9bit
      * value for the leaves
      *
-     * pre: bos != null post: subtree from node written to bos in STF format
+     * pre: bos != null 
+     * post: subtree from node written to bos in STF format
      *
      * @param bos
      *         output stream to write the tree bits to
@@ -259,8 +261,8 @@ public class SimpleHuffProcessor implements IHuffProcessor {
     /**
      * Decodes the compressed bits using the huffman tree and writes origional bytes
      *
-     * pre: bis != null, bos != null, root != null post: decoded bytes are written to bos until
-     * PSEUDO_EOF
+     * pre: bis != null, bos != null, root != null 
+     * post: decoded bytes are written to bos until PSEUDO_EOF
      *
      * @param bis
      *         input stream of compressed bits
@@ -307,7 +309,8 @@ public class SimpleHuffProcessor implements IHuffProcessor {
     /**
      * Rebuilds a Huffman tree from STF bits using a preorder traversal
      *
-     * pre: bis != null post: returns the root of the rebuild subtree/tree
+     * pre: bis != null 
+     * post: returns the root of the rebuild subtree/tree
      *
      * @param bis
      *         bit input stream to read the bits from

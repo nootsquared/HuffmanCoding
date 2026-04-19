@@ -35,8 +35,9 @@ public class HuffmanCode {
     /**
      * Constructs an instance of this huffman code object
      *
-     * pre: charFreqs != null, charFreqs.length == IHuffConstants.ALPH_SIZE
+     * pre: charFreqs != null, charFreqs.length == IHuffConstants.ALPH_SIZE 
      * post: root, huffTreeSize, numLeaves, and huffCode are all initialized
+     *
      * @param charFreqs
      *         is an integer array for all the character frequencies
      */
@@ -60,8 +61,9 @@ public class HuffmanCode {
     /**
      * Generates a huffMap based on a priority queue and returns the root node
      *
-     * pre: pq != null, pq.size >= 1
+     * pre: pq != null, pq.size >= 1 
      * post: returns the root of the fully formed huffman tree
+     *
      * @param pq
      *         priority queue of TreeNodes that includes each character and frequency
      * @return TreeNode root that is the root of the huffMap
@@ -103,8 +105,9 @@ public class HuffmanCode {
     /**
      * Generates a HashMap huffCode based on the huff tree
      *
-     * pre: root != null
+     * pre: root != null 
      * post: returns a map where every char with non-zero freq is mapped to binary code string
+     *
      * @return HashMap of codes in {character = path} format
      */
     public HashMap<Integer, String> generateHuffCode() {
@@ -117,8 +120,9 @@ public class HuffmanCode {
     /**
      * Private helper method for generateHuffCode()
      *
-     * pre: codes != null, node != null path != null
+     * pre: codes != null, node != null path != null 
      * post: has a value to bits entry for every leaf
+     *
      * @param codes
      *         is a HashMap of all the huff codes, when it is initially passed in it has no values
      * @param node
@@ -140,10 +144,12 @@ public class HuffmanCode {
 
     /**
      * Counts the total number of bits needed to encode the given char frequencies
-     * 
-     * pre: charFreqs != null, charFreqs.length == IHuffConstants.ALPH_SIZE, huffCode != null
+     *
+     * pre: charFreqs != null, charFreqs.length == IHuffConstants.ALPH_SIZE, huffCode != null 
      * post: returns the total num of bits needed to encode all chars plus EOF
-     * @param charFreqs integer array of char frequencies
+     *
+     * @param charFreqs
+     *         integer array of char frequencies
      * @return total number of bits needed to encode the data including the PSEUDO_EOF
      */
     public int countBits(int[] charFreqs) {

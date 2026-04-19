@@ -23,7 +23,7 @@ import java.util.LinkedList;
 
 /* A class that models a fair priority queue */
 public class PriorityQueue<E extends Comparable<E>> {
-    
+
     // elements kept in ascending sorted order
     private LinkedList<E> queue;
 
@@ -38,8 +38,9 @@ public class PriorityQueue<E extends Comparable<E>> {
      * Adds an element to the priority queue in ascending order. If two elements have the same
      * priority, tiebreaker is used
      *
-     * pre: elm != null
+     * pre: elm != null 
      * post: elm is inserted at correct sorted pos, equal priority sorted by time added
+     *
      * @param elm
      *         is the element to be enqueued
      * @throws IllegalArgumentException
@@ -63,6 +64,7 @@ public class PriorityQueue<E extends Comparable<E>> {
      *
      * pre: queue is not empty
      * post: returns the lowest priority element without modifying the queue
+     *
      * @return the first elm of the queue
      */
     public E peek() {
@@ -72,8 +74,9 @@ public class PriorityQueue<E extends Comparable<E>> {
     /**
      * Removes and returns the first elm of the queue
      *
-     * pre: queue is not empty
+     * pre: queue is not empty 
      * post: removes and returns the lowest priority element, queue size dec by 1
+     *
      * @return the elm that was removed
      */
     public E dequeue() {

@@ -78,7 +78,8 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         } else if (headerFormat == STORE_TREE) {
             finalBits += BITS_PER_INT;
             // 1 bit (1) + 9 bits following
-            finalBits += (huffCode.treeSize()) + (huffCode.getNumLeafNodes() * (1 + (BITS_PER_WORD + 1)));
+            finalBits += (huffCode.treeSize()) +
+                    (huffCode.getNumLeafNodes() * (1 + (BITS_PER_WORD + 1)));
         } else {
             myViewer.showError("Use standard count or tree format, custom is not supported");
             bitInputStream.close();
@@ -114,7 +115,8 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         HashMap<Integer, String> huffMap = huffCode.generateHuffCode();
         if (!force && compressSavedBits < 0) {
             myViewer.showError(
-                    "Compressed file is larger than the og file, activate force to compress anyways");
+                    "Compressed file is larger than the og file, " +
+                            "activate force to compress anyways");
             bis.close();
             bos.close();
             return 0;
@@ -129,7 +131,8 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         if (compressHeaderFormat == STORE_TREE) {
             TreeNode root = huffCode.getRoot();
             // internal nodes (1 bit per) + leaves (1 bit + 9 bit value per)
-            int treeBitSize = (huffCode.treeSize()) + (huffCode.getNumLeafNodes() * (1 + (BITS_PER_WORD + 1)));
+            int treeBitSize = (huffCode.treeSize()) +
+                    (huffCode.getNumLeafNodes() * (1 + (BITS_PER_WORD + 1)));
             bos.writeBits(BITS_PER_INT, treeBitSize);
             writeStoreTree(bos, root);
         }

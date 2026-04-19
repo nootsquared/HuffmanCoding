@@ -5,7 +5,7 @@
  *  this programming assignment is our own work
  *  and we have not provided this code to any other student.
  *
- *  Number of slip days used:
+ *  Number of slip days used: 2
  *
  *  Student 1: Anishka Chokshi
  *  UTEID: arc6369

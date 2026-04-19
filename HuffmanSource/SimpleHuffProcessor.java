@@ -4,7 +4,7 @@
  *  this programming assignment is our own work
  *  and we have not provided this code to any other student.
  *
- *  Number of slip days used:
+ *  Number of slip days used: 2
  *
  *  Student 1: Anishka Chokshi
  *  UTEID: arc6369
@@ -14,8 +14,8 @@
  *  UTEID: prm2384
  *  email address: prm2384@eid.utexas.edu
  *
- *  Grader name:
- *  Section number:
+ *  Grader name: Issac
+ *  Section number: 52970
  */
 
 import java.io.IOException;
@@ -26,10 +26,15 @@ import java.util.HashMap;
 public class SimpleHuffProcessor implements IHuffProcessor {
 
     private IHuffViewer myViewer;
+    // huffman tree and codes built during preprocessCompress
     private HuffmanCode huffCode;
+    // header format selected during preprocessCompress used in compress
     private int compressHeaderFormat;
+    // char frequencies from og file, used in compress for SCF header
     private int[] compressCharFreqs;
+    // bits saved by compression
     private int compressSavedBits;
+    // total bits written to compressed file
     private int compressFinalBits;
 
     /**
@@ -52,11 +57,11 @@ public class SimpleHuffProcessor implements IHuffProcessor {
     public int preprocessCompress(InputStream in, int headerFormat) throws IOException {
         BitInputStream bitInputStream = new BitInputStream(in);
         int initialBits = 0;
+        // magic number (32 bits) + header format constant (32 bits)
         int finalBits = BITS_PER_INT + BITS_PER_INT;
         int[] charFreqs = new int[ALPH_SIZE];
-        int inbits = 0;
         // parse through each byte in the file and increment the letter in the charFreqs array
-        inbits = bitInputStream.readBits(BITS_PER_WORD);
+        int inbits = bitInputStream.readBits(BITS_PER_WORD);
         while (inbits != -1) {
             charFreqs[inbits]++;
             initialBits += BITS_PER_WORD;
@@ -68,16 +73,21 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         }
         huffCode = new HuffmanCode(charFreqs);
         compressHeaderFormat = headerFormat;
-        if (headerFormat == IHuffConstants.STORE_COUNTS) {
+        if (headerFormat == STORE_COUNTS) {
             finalBits += (BITS_PER_INT * ALPH_SIZE);
-        } else if (headerFormat == IHuffConstants.STORE_TREE) {
+        } else if (headerFormat == STORE_TREE) {
             finalBits += BITS_PER_INT;
             // 1 bit (1) + 9 bits following
             finalBits += (huffCode.treeSize()) + (huffCode.getNumLeafNodes() * (1 + (BITS_PER_WORD + 1)));
+        } else {
+            myViewer.showError("Use standard count or tree format, custom is not supported");
+            bitInputStream.close();
+            return 0;
         }
         finalBits += huffCode.countBits(charFreqs);
         compressFinalBits = finalBits;
         compressSavedBits = initialBits - finalBits;
+        bitInputStream.close();
         return compressSavedBits;
     }
 
@@ -101,11 +111,12 @@ public class SimpleHuffProcessor implements IHuffProcessor {
     public int compress(InputStream in, OutputStream out, boolean force) throws IOException {
         BitInputStream bis = new BitInputStream(in);
         BitOutputStream bos = new BitOutputStream(out);
-        TreeNode root;
         HashMap<Integer, String> huffMap = huffCode.generateHuffCode();
         if (!force && compressSavedBits < 0) {
             myViewer.showError(
                     "Compressed file is larger than the og file, activate force to compress anyways");
+            bis.close();
+            bos.close();
             return 0;
         }
         bos.writeBits(BITS_PER_INT, MAGIC_NUMBER);
@@ -116,7 +127,8 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             }
         }
         if (compressHeaderFormat == STORE_TREE) {
-            root = huffCode.getRoot();
+            TreeNode root = huffCode.getRoot();
+            // internal nodes (1 bit per) + leaves (1 bit + 9 bit value per)
             int treeBitSize = (huffCode.treeSize()) + (huffCode.getNumLeafNodes() * (1 + (BITS_PER_WORD + 1)));
             bos.writeBits(BITS_PER_INT, treeBitSize);
             writeStoreTree(bos, root);
@@ -126,10 +138,12 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             compressedData = writeCompressedData(bis, bos, huffMap);
         }
         String psuedoEofCode = huffMap.get(PSEUDO_EOF);
+        // write each 0 and 1 char in the code string as a single bit
         for (int i = 0; i < psuedoEofCode.length(); i++) {
             bos.writeBits(1, Integer.parseInt(psuedoEofCode.charAt(i) + ""));
         }
-        bos.flush();
+        bis.close();
+        bos.close();
         return compressFinalBits;
     }
 
@@ -156,6 +170,7 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             return false;
         } else {
             String encodedItemString = huffMap.get(nextItem);
+            // write each 0 and 1 char in the code string as a single bit
             for (int i = 0; i < encodedItemString.length(); i++) {
                 bos.writeBits(1, Integer.parseInt(encodedItemString.charAt(i) + ""));
             }
@@ -235,7 +250,10 @@ public class SimpleHuffProcessor implements IHuffProcessor {
         } else {
             throw new IOException("Invalid header type");
         }
-        return decode(bis, bos, root);
+        int bitsWritten = decode(bis, bos, root);
+        bis.close();
+        bos.close();
+        return bitsWritten;
     }
 
     /**
@@ -269,7 +287,6 @@ public class SimpleHuffProcessor implements IHuffProcessor {
             } else if (bitInput == 1) {
                 tempNode = tempNode.getRight();
             }
-            // do I need to check for null here
             if (tempNode == null) {
                 throw new IOException("Invalid tree structure, reached a null node");
             }
@@ -278,12 +295,12 @@ public class SimpleHuffProcessor implements IHuffProcessor {
                     eof = true;
                 } else {
                     bos.writeBits(BITS_PER_WORD, tempNode.getValue());
+                    // reset to root to begin decoding the next char
                     tempNode = root;
                     bitsWritten += BITS_PER_WORD;
                 }
             }
         }
-        bos.flush();
         return bitsWritten;
     }
 

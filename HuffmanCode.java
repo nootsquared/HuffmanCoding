@@ -23,26 +23,27 @@ import java.util.HashMap;
 /* A class that generates a Huffman Code based on a frequency Priority Queue */
 public class HuffmanCode {
 
-    // three parameters to keep track of the tree, the number of nodes, and the number of leaves
+    // root of the completed huffman tree
     private TreeNode root;
+    // size of huffmanTree
     private int huffTreeSize;
+    // number of leaf nodes
     private int numLeaves;
-
-    // hashmap keeps track of the huffman code
+    // maps each char value to its huffman bit encoding
     private HashMap<Integer, String> huffCode;
 
     /**
      * Constructs an instance of this huffman code object
      *
+     * pre: charFreqs != null, charFreqs.length == IHuffConstants.ALPH_SIZE
+     * post: root, huffTreeSize, numLeaves, and huffCode are all initialized
      * @param charFreqs
      *         is an integer array for all the character frequencies
      */
     public HuffmanCode(int[] charFreqs) {
-
         PriorityQueue<TreeNode> pq = new PriorityQueue<>();
         huffTreeSize = 0;
         numLeaves = 0;
-
         // add all the non-zero frequencies into the priority queue
         for (int i = 0; i < charFreqs.length; i++) {
             if (charFreqs[i] > 0) {
@@ -50,12 +51,8 @@ public class HuffmanCode {
                 numLeaves++;
             }
         }
-
-        // enqueue the PEOF character manually
         pq.enqueue(new TreeNode(IHuffConstants.PSEUDO_EOF, 1));
         numLeaves++;
-
-        // generate huff map and code
         root = generateHuffMap(pq);
         huffCode = generateHuffCode();
     }
@@ -63,23 +60,22 @@ public class HuffmanCode {
     /**
      * Generates a huffMap based on a priority queue and returns the root node
      *
+     * pre: pq != null, pq.size >= 1
+     * post: returns the root of the fully formed huffman tree
      * @param pq
      *         priority queue of TreeNodes that includes each character and frequency
      * @return TreeNode root that is the root of the huffMap
      */
     private TreeNode generateHuffMap(PriorityQueue<TreeNode> pq) {
-
         // while pq still has elements
         while (pq.size() > 1) {
             TreeNode left = pq.dequeue();
             TreeNode right = pq.dequeue();
-
             // take the first two elms and conjoin them, then add them back into the queue
             TreeNode result = new TreeNode(left, left.getFrequency() + right.getFrequency(), right);
             pq.enqueue(result);
             huffTreeSize++;
         }
-
         return pq.dequeue();
     }
 
@@ -107,6 +103,8 @@ public class HuffmanCode {
     /**
      * Generates a HashMap huffCode based on the huff tree
      *
+     * pre: root != null
+     * post: returns a map where every char with non-zero freq is mapped to binary code string
      * @return HashMap of codes in {character = path} format
      */
     public HashMap<Integer, String> generateHuffCode() {
@@ -119,6 +117,8 @@ public class HuffmanCode {
     /**
      * Private helper method for generateHuffCode()
      *
+     * pre: codes != null, node != null path != null
+     * post: has a value to bits entry for every leaf
      * @param codes
      *         is a HashMap of all the huff codes, when it is initially passed in it has no values
      * @param node
@@ -139,7 +139,12 @@ public class HuffmanCode {
     }
 
     /**
-     * This method is chopped does not work must workshop
+     * Counts the total number of bits needed to encode the given char frequencies
+     * 
+     * pre: charFreqs != null, charFreqs.length == IHuffConstants.ALPH_SIZE, huffCode != null
+     * post: returns the total num of bits needed to encode all chars plus EOF
+     * @param charFreqs integer array of char frequencies
+     * @return total number of bits needed to encode the data including the PSEUDO_EOF
      */
     public int countBits(int[] charFreqs) {
         int numBits = 0;
